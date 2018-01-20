@@ -14,13 +14,9 @@
 #include "stm32f10x.h"
 #include "helpers/stm32_macroses.h"
 #include "hal/clock.h"
+#include "hal/display/driver_prototype.h"
+#include "hal/display/driver_implementation.h"
 
 int main(int argc, char* argv[]);
-
-/**
- * Changes led state.
- */
-void ToggleLed(void);
-
 
 #endif /* MAIN_H_ */
