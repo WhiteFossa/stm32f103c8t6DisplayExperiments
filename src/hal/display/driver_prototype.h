@@ -15,6 +15,12 @@
 #define DISPLAY_Y_SIZE 64
 
 /**
+ * Available colors.
+ */
+#define DISPLAY_PIXEL_ON_COLOR 0xFF
+#define DISPLAY_PIXEL_OFF_COLOR 0x00
+
+/**
  * Call this function to initialize display-related hardware (set up port directions etc).
  */
 void InitializeDisplay(void);
@@ -25,9 +31,25 @@ void InitializeDisplay(void);
 void DisplayOnOff(uint8_t on);
 
 /**
+ * Clears framebuffer.
+ */
+void ClearFramebuffer(void);
+
+/**
  * Pushes framebuffer (or at least modified parts) to display.
  */
 void PushFramebuffer(void);
+
+/**
+ * Draws a pixel of current color.
+ */
+void DrawPixel(uint16_t y, uint16_t x);
+
+/*
+ * Sets active color for drawing.
+ */
+void SetActiveColor(uint32_t color);
+
 
 
 

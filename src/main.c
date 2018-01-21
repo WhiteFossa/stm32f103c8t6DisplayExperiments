@@ -21,22 +21,27 @@ int main(int argc, char* argv[])
 	InitializeDisplay();
 	DisplayOnOff(0xFF);
 
+	ClearFramebuffer();
 	PushFramebuffer();
 
-	uint8_t data = 0x00U;
+	SetActiveColor(DISPLAY_PIXEL_ON_COLOR);
 
 	// Infinite loop
 	while (1)
 	{
-		memset(Framebuffer, data, 1024);
 		PushFramebuffer();
-		data ++;
 
-		uint32_t counter = 0;
-		while (counter < 1000000)
+		for (uint16_t y = 0; y < DISPLAY_Y_SIZE; y++)
 		{
-			counter ++;
+			for (uint16_t x = 0; x < DISPLAY_X_SIZE; x++)
+			{
+				DrawPixel(y, x);
+
+				PushFramebuffer();
+			}
 		}
+
+		SetActiveColor(DISPLAY_PIXEL_OFF_COLOR);
 	}
 }
 

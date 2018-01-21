@@ -15,7 +15,6 @@
 #include "helpers/stm32_macroses.h"
 #include "hal/clock.h"
 #include "hal/display/driver_prototype.h"
-#include "hal/display/driver_implementation.h"
 
 int main(int argc, char* argv[]);
 

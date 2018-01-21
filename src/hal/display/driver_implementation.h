@@ -112,6 +112,11 @@
 #define DISP_FRAMEBUFFER_H_STRIPE_WIDTH 64
 
 /**
+ * Mask for masking active color.
+ */
+#define DISP_COLOR_MASK 0xFFU
+
+/**
  * Possible states of 'send command' finite automate.
  */
 typedef enum
@@ -131,6 +136,11 @@ SendToDisplayStates SendToDisplayState;
  * Framebuffer. Data addressed in the next way: a = (stripe * 2 * DISP_FRAMEBUFFER_H_STRIPE_WIDTH) + positionInStripe
  */
 uint8_t Framebuffer[DISP_FRAMEBUFFER_SIZE];
+
+/**
+ * Active color. 0x00 - pixel off, !0x00 - pixel on.
+ */
+uint8_t ActiveColor;
 
 /**
  * Tries to send command to display. Returns 0 and do nothing if display isn't ready now. Otherwise schedules command

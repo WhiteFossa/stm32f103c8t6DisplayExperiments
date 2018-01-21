@@ -64,7 +64,7 @@ void InitializeDisplay(void)
 	NVIC_EnableIRQ(TIM2_IRQn);
 
 	// Clear framebuffer
-	memset(Framebuffer, 0x00, DISP_FRAMEBUFFER_SIZE);
+	ClearFramebuffer();
 
 	// Now we are ready to send commands.
 	SendToDisplayState = Idle;
@@ -221,5 +221,37 @@ void PushFramebuffer(void)
 			SendToDisplayWithWait(Framebuffer[stripeBeginAddr + v + DISP_FRAMEBUFFER_H_STRIPE_WIDTH]);
 		}
 	}
+}
+
+void DrawPixel(uint16_t y, uint16_t x)
+{
+	if ((y >= DISPLAY_Y_SIZE) || (x >= DISPLAY_X_SIZE))
+	{
+		return;
+	}
+
+	uint8_t stripe = y / DISP_FRAMEBUFFER_H_STRIPE_HEIGHT;
+	uint8_t posInStripe = y % DISP_FRAMEBUFFER_H_STRIPE_HEIGHT;
+
+	uint16_t fbAddr = stripe * 2 * DISP_FRAMEBUFFER_H_STRIPE_WIDTH + x;
+
+	if (ActiveColor != 0x00)
+	{
+		Framebuffer[fbAddr] |= BV(posInStripe);
+	}
+	else
+	{
+		Framebuffer[fbAddr] &= ~BV(posInStripe);
+	}
+}
+
+void SetActiveColor(uint32_t color)
+{
+	ActiveColor = color & DISP_COLOR_MASK;
+}
+
+void ClearFramebuffer(void)
+{
+	memset(Framebuffer, 0x00, DISP_FRAMEBUFFER_SIZE);
 }
 
