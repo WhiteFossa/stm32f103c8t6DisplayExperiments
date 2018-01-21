@@ -63,6 +63,9 @@ void InitializeDisplay(void)
 	NVIC_SetPriority(TIM2_IRQn, priority);
 	NVIC_EnableIRQ(TIM2_IRQn);
 
+	// Clear framebuffer
+	memset(Framebuffer, 0x00, DISP_FRAMEBUFFER_SIZE);
+
 	// Now we are ready to send commands.
 	SendToDisplayState = Idle;
 }
@@ -194,5 +197,29 @@ void DisplaySetStartLine(uint8_t line)
 	command |= line & DISP_START_LINE_MASK;
 
 	SendToDisplayWithWait(command);
+}
+
+void PushFramebuffer(void)
+{
+	uint16_t stripeBeginAddr;
+
+	for (uint8_t hStripe = 0; hStripe < DISP_FRAMEBUFFER_H_STRIPES; hStripe ++)
+	{
+		stripeBeginAddr = hStripe * 2 * DISP_FRAMEBUFFER_H_STRIPE_WIDTH;
+
+		DisplaySetXAddress(hStripe);
+
+		// Starting from begin of stripe, left to right
+		DisplaySetYAddress(0U);
+
+		for(uint8_t v = 0; v < DISP_FRAMEBUFFER_H_STRIPE_WIDTH; v++)
+		{
+			// Left
+			SendToDisplayWithWait(Framebuffer[stripeBeginAddr + v] | BV(DISP_STD_LEFT_CTRLR));
+
+			// Right
+			SendToDisplayWithWait(Framebuffer[stripeBeginAddr + v + DISP_FRAMEBUFFER_H_STRIPE_WIDTH]);
+		}
+	}
 }
 

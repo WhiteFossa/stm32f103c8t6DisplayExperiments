@@ -21,14 +21,22 @@ int main(int argc, char* argv[])
 	InitializeDisplay();
 	DisplayOnOff(0xFF);
 
-	DisplaySetStartLine(10);
+	PushFramebuffer();
 
-	SendToDisplayWithWait(0x00 | BV(DISP_STD_LEFT_CTRLR));
-	SendToDisplayWithWait(0x00);
+	uint8_t data = 0x00U;
 
 	// Infinite loop
 	while (1)
 	{
+		memset(Framebuffer, data, 1024);
+		PushFramebuffer();
+		data ++;
+
+		uint32_t counter = 0;
+		while (counter < 1000000)
+		{
+			counter ++;
+		}
 	}
 }
 

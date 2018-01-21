@@ -59,22 +59,22 @@
 /**
  * With 36 MHz timer and this prescaler we will get near 27nS rate.
  */
-#define DISP_TIMER_PRESCALER		0x01U
+#define DISP_TIMER_PRESCALER		4U
 
 /**
  * Time in timer ticks from setting data on bus to strobe.
  */
-#define DISP_DATA_TO_STROBE_TIME	10U
+#define DISP_DATA_TO_STROBE_TIME	20U
 
 /**
  * Display strobe duration in timer ticks.
  */
-#define DISP_STROBE_LENGTH			10U
+#define DISP_STROBE_LENGTH			20U
 
 /**
  * Time in timer ticks from strobe end to new command.
  */
-#define DISP_STROBE_END_TO_IDLE_TIME	10U
+#define DISP_STROBE_END_TO_IDLE_TIME	20U
 
 /*
  * Mask for masking display Y address.
@@ -92,6 +92,26 @@
 #define DISP_START_LINE_MASK 0b00111111;
 
 /**
+ * Framebuffer size.
+ */
+#define DISP_FRAMEBUFFER_SIZE (DISPLAY_X_SIZE * DISPLAY_Y_SIZE / 8)
+
+/**
+ * We have 8 horizontal stripes in framebuffer, each 128 bytes long.
+ */
+#define DISP_FRAMEBUFFER_H_STRIPES 8
+
+/**
+ * Each stripe have 8 pixels height.
+ */
+#define DISP_FRAMEBUFFER_H_STRIPE_HEIGHT 8
+
+/**
+ * 64 pixels in stripe, display consist of two parts.
+ */
+#define DISP_FRAMEBUFFER_H_STRIPE_WIDTH 64
+
+/**
  * Possible states of 'send command' finite automate.
  */
 typedef enum
@@ -106,6 +126,11 @@ typedef enum
  * State of SendCommandState automate.
  */
 SendToDisplayStates SendToDisplayState;
+
+/**
+ * Framebuffer. Data addressed in the next way: a = (stripe * 2 * DISP_FRAMEBUFFER_H_STRIPE_WIDTH) + positionInStripe
+ */
+uint8_t Framebuffer[DISP_FRAMEBUFFER_SIZE];
 
 /**
  * Tries to send command to display. Returns 0 and do nothing if display isn't ready now. Otherwise schedules command
