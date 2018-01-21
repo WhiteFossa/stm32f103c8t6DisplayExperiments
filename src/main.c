@@ -19,16 +19,16 @@ int main(int argc, char* argv[])
 //	ActivateLSEClock();
 
 	InitializeDisplay();
+	DisplayOnOff(0xFF);
 
-	uint8_t data = 0x00;
+	DisplaySetStartLine(10);
+
+	SendToDisplayWithWait(0x00 | BV(DISP_STD_LEFT_CTRLR));
+	SendToDisplayWithWait(0x00);
 
 	// Infinite loop
 	while (1)
 	{
-		while (SendToDisplay(data) == 0x00) {};
-		while (SendToDisplay(((uint16_t)data) | (1 << DISP_STD_LEFT_CTRLR)) == 0x00) {};
-
-		data ++;
 	}
 }
 

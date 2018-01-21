@@ -51,30 +51,45 @@
  */
 #define DISP_STD_LEFT_CTRLR		8U
 
-/**
+/**timer ticks
  * Set this bit in SendToDisplay word to send command to display. Command always are being sent to both controllers, ignoring STD_LEFT_CTRLR.
  */
 #define DISP_STD_COMMAND			9U
 
 /**
- * With 36 MHz timer and this prescaler we will get near 27nS rate.
+ * With 36 MHz timer and this prescaler we will get near 100nS rate.
  */
-#define DISP_TIMER_PRESCALER		0x01U
+#define DISP_TIMER_PRESCALER		0x04U
 
 /**
  * Time in timer ticks from setting data on bus to strobe.
  */
-#define DISP_DATA_TO_STROBE_TIME	1U
+#define DISP_DATA_TO_STROBE_TIME	100U
 
 /**
  * Display strobe duration in timer ticks.
  */
-#define DISP_STROBE_LENGTH			1U
+#define DISP_STROBE_LENGTH			100U
 
 /**
  * Time in timer ticks from strobe end to new command.
  */
-#define DISP_STROBE_END_TO_IDLE_TIME	1U
+#define DISP_STROBE_END_TO_IDLE_TIME	100U
+
+/*
+ * Mask for masking display Y address.
+ */
+#define DISP_Y_ADDRESS_MASK 0b00111111
+
+/*
+ * Mask for masking display X address.
+ */
+#define DISP_X_ADDRESS_MASK 0b00000111;
+
+/*
+ * Mask for masking display start line.
+ */
+#define DISP_START_LINE_MASK 0b00111111;
 
 /**
  * Possible states of 'send command' finite automate.
@@ -97,5 +112,26 @@ SendToDisplayStates SendToDisplayState;
  * and immediately returns with not 0.
  */
 uint8_t SendToDisplay(uint16_t data);
+
+/**
+ * Waits until display will be able to get next command, then send it.
+ */
+void SendToDisplayWithWait(uint16_t data);
+
+/**
+ * Sets display Y address.
+ */
+void DisplaySetYAddress(uint8_t addr);
+
+/**
+ * Sets display X address.
+ */
+void DisplaySetXAddress(uint8_t addr);
+
+/**
+ * Sets display start line.
+ */
+void DisplaySetStartLine(uint8_t line);
+
 
 #endif /* HAL_DISPLAY_DRIVER_IMPLEMENTATION_H_ */

@@ -13,5 +13,11 @@
  */
 void InitializeDisplay(void);
 
+/**
+ * Turn display on (on != 0x00) or off (on == 0x00).
+ */
+void DisplayOnOff(uint8_t on);
+
+
 
 #endif /* HAL_DISPLAY_DRIVER_PROTOTYPE_H_ */

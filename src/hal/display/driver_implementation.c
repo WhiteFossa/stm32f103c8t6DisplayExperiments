@@ -65,9 +65,6 @@ void InitializeDisplay(void)
 
 	// Now we are ready to send commands.
 	SendToDisplayState = Idle;
-
-	// Switching display on
-	SendToDisplay(0b00111111 | (1 << DISP_STD_COMMAND));
 }
 
 void TIM2_IRQHandler(void)
@@ -154,3 +151,48 @@ uint8_t SendToDisplay(uint16_t data)
 
 	return 0xFFU;
 }
+
+void SendToDisplayWithWait(uint16_t data)
+{
+	while (0x00 == SendToDisplay(data)) {};
+}
+
+void DisplayOnOff(uint8_t on)
+{
+	uint16_t command = 0b00111110 | BV(DISP_STD_COMMAND);
+
+	if (on != 0x00)
+	{
+		command |= BV(0);
+	}
+
+	SendToDisplayWithWait(command);
+}
+
+void DisplaySetYAddress(uint8_t addr)
+{
+	uint16_t command = 0b01000000 | BV(DISP_STD_COMMAND);
+
+	command |= (addr & DISP_Y_ADDRESS_MASK);
+
+	SendToDisplayWithWait(command);
+}
+
+void DisplaySetXAddress(uint8_t addr)
+{
+	uint16_t command = 0b10111000 | BV(DISP_STD_COMMAND);
+
+	command |= addr & DISP_X_ADDRESS_MASK;
+
+	SendToDisplayWithWait(command);
+}
+
+void DisplaySetStartLine(uint8_t line)
+{
+	uint16_t command = 0b11000000 | BV(DISP_STD_COMMAND);
+
+	command |= line & DISP_START_LINE_MASK;
+
+	SendToDisplayWithWait(command);
+}
+
