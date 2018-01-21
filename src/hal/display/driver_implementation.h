@@ -57,24 +57,24 @@
 #define DISP_STD_COMMAND			9U
 
 /**
- * With 36 MHz timer and this prescaler we will get near 100nS rate.
+ * With 36 MHz timer and this prescaler we will get near 27nS rate.
  */
-#define DISP_TIMER_PRESCALER		0x04U
+#define DISP_TIMER_PRESCALER		0x01U
 
 /**
  * Time in timer ticks from setting data on bus to strobe.
  */
-#define DISP_DATA_TO_STROBE_TIME	100U
+#define DISP_DATA_TO_STROBE_TIME	10U
 
 /**
  * Display strobe duration in timer ticks.
  */
-#define DISP_STROBE_LENGTH			100U
+#define DISP_STROBE_LENGTH			10U
 
 /**
  * Time in timer ticks from strobe end to new command.
  */
-#define DISP_STROBE_END_TO_IDLE_TIME	100U
+#define DISP_STROBE_END_TO_IDLE_TIME	10U
 
 /*
  * Mask for masking display Y address.
