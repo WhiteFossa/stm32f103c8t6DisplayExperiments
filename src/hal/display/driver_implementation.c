@@ -7,7 +7,7 @@
 
 #include "driver_implementation.h"
 
-void InitializeDisplay()
+void InitializeDisplay(void)
 {
 	// Clocking up port A
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
@@ -42,22 +42,90 @@ void InitializeDisplay()
 						| GPIO_CRH_MODE10_0 | GPIO_CRH_MODE10_1
 						| GPIO_CRH_MODE11_0 | GPIO_CRH_MODE11_1);
 
+	// Clocking-up TIM2
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+	TIM2->PSC = DISP_TIMER_PRESCALER; // Prescaler, with 36 MHz timer we will have near 100ns per tick
+
+	// Auto-preload, downcounting, one pulse mode, interrupts only from underflow/overflow
+	TIM2->CR1 |= TIM_CR1_ARPE | TIM_CR1_DIR | TIM_CR1_OPM | TIM_CR1_URS;
+
+	// Edge-aligned mode, update enabled
+	TIM2->CR1 &= ~(TIM_CR1_CMS | TIM_CR1_UDIS);
+
+	TIM2->DIER |= TIM_DIER_UIE; // Interrupts on underflow/overflow
+
+	// Enabling TIM2 interrupts
+	uint32_t prioritygroup = NVIC_GetPriorityGrouping();
+
+	// Highest user IRQ priority (0), 1 sub-pri
+	uint32_t priority = NVIC_EncodePriority(prioritygroup, 0, 1 );
+	NVIC_SetPriority(TIM2_IRQn, priority);
+	NVIC_EnableIRQ(TIM2_IRQn);
+
+	// Now we are ready to send commands.
+	SendToDisplayState = Idle;
+
 	// Switching display on
-	SendToDisplay(0b00111111 | (1 << STD_COMMAND));
+	SendToDisplay(0b00111111 | (1 << DISP_STD_COMMAND));
 }
 
-void Delay(void)
+void TIM2_IRQHandler(void)
 {
-	volatile uint32_t timer = 0x3FFF;
-	while (timer--);
+	// What happened?
+	if ((TIM2->SR & TIM_SR_UIF) != 0x00)
+	{
+		// Timer underrun
+		TIM2->SR &= ~TIM_SR_UIF;
+
+		// What state we have?
+		switch (SendToDisplayState)
+		{
+			case DataSent:
+				// Data sent, time to set strobe
+				GPIOA->ODR |= BV(DISP_E);
+
+				SendToDisplayState = StrobeSet;
+
+				// Re-launch
+				TIM2->ARR = DISP_STROBE_LENGTH;
+				TIM2->CR1 |= TIM_CR1_CEN;
+
+				break;
+			case StrobeSet:
+				// Strobe set, time to clear it
+				GPIOA->ODR = (GPIOA->ODR & ~BV(DISP_E)) | (1 << DISP_CS1) | (1 << DISP_CS2);
+
+				SendToDisplayState = StrobeCleared;
+
+				// Re-launch
+				TIM2->ARR = DISP_STROBE_END_TO_IDLE_TIME;
+				TIM2->CR1 |= TIM_CR1_CEN;
+
+				break;
+			case StrobeCleared:
+				// Transmission completed
+				SendToDisplayState = Idle;
+				break;
+		}
+	}
 }
 
-void SendToDisplay(uint16_t data)
+uint8_t SendToDisplay(uint16_t data)
 {
+	// Checking state
+	if (SendToDisplayState != Idle)
+	{
+		return 0x00U;
+	}
+
+	// Setting port data
+	SendToDisplayState = DataSent;
+
 	// Both controllers off
 	uint16_t toPort = (data & DISP_DATA_MASK) | (1 << DISP_CS1) | (1 << DISP_CS2);
 
-	if ((data & (1 << STD_COMMAND)) != 0)
+	if ((data & (1 << DISP_STD_COMMAND)) != 0)
 	{
 		// Command, writing to both controllers
 		toPort &= ~(BV(DISP_CS1) | BV(DISP_CS2));
@@ -68,7 +136,7 @@ void SendToDisplay(uint16_t data)
 		toPort |= (1 << DISP_DC);
 
 		// To what controller?
-		if ((data & (1 << STD_LEFT_CTRLR)) != 0)
+		if ((data & (1 << DISP_STD_LEFT_CTRLR)) != 0)
 		{
 			toPort &= ~BV(DISP_CS1);
 		}
@@ -80,18 +148,9 @@ void SendToDisplay(uint16_t data)
 
 	GPIOA->ODR = toPort;
 
-	Delay();
+	// Starting timecount until strobe
+	TIM2->ARR = DISP_DATA_TO_STROBE_TIME;
+	TIM2->CR1 |= TIM_CR1_CEN;
 
-	toPort |= BV(DISP_E);
-	GPIOA->ODR = toPort;
-
-	Delay();
-
-	toPort &= ~BV(DISP_E);
-	toPort |= (1 << DISP_CS1) | (1 << DISP_CS2);
-	GPIOA->ODR = toPort;
-
-	Delay();
+	return 0xFFU;
 }
-
-

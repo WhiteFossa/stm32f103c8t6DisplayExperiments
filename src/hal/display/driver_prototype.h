@@ -11,7 +11,7 @@
 /**
  * Call this function to initialize display-related hardware (set up port directions etc).
  */
-void InitializeDisplay();
+void InitializeDisplay(void);
 
 
 #endif /* HAL_DISPLAY_DRIVER_PROTOTYPE_H_ */

@@ -49,21 +49,53 @@
 /**
  * Set this bit in SendToDisplay word to make request to left controller. If not set, request will go to right controller.
  */
-#define STD_LEFT_CTRLR		8U
+#define DISP_STD_LEFT_CTRLR		8U
 
 /**
  * Set this bit in SendToDisplay word to send command to display. Command always are being sent to both controllers, ignoring STD_LEFT_CTRLR.
  */
-#define STD_COMMAND			9U
+#define DISP_STD_COMMAND			9U
 
 /**
- * Call this function to send data/command to display. Data/command is in [0-7] bits.
+ * With 36 MHz timer and this prescaler we will get near 27nS rate.
  */
-void SendToDisplay(uint16_t data);
+#define DISP_TIMER_PRESCALER		0x01U
 
 /**
- * Dumb delay (later will be smarter).
+ * Time in timer ticks from setting data on bus to strobe.
  */
-void Delay(void);
+#define DISP_DATA_TO_STROBE_TIME	1U
+
+/**
+ * Display strobe duration in timer ticks.
+ */
+#define DISP_STROBE_LENGTH			1U
+
+/**
+ * Time in timer ticks from strobe end to new command.
+ */
+#define DISP_STROBE_END_TO_IDLE_TIME	1U
+
+/**
+ * Possible states of 'send command' finite automate.
+ */
+typedef enum
+{
+	Idle = 0U,
+	DataSent = 1U,
+	StrobeSet = 2U,
+	StrobeCleared = 3U
+} SendToDisplayStates;
+
+/**
+ * State of SendCommandState automate.
+ */
+SendToDisplayStates SendToDisplayState;
+
+/**
+ * Tries to send command to display. Returns 0 and do nothing if display isn't ready now. Otherwise schedules command
+ * and immediately returns with not 0.
+ */
+uint8_t SendToDisplay(uint16_t data);
 
 #endif /* HAL_DISPLAY_DRIVER_IMPLEMENTATION_H_ */
